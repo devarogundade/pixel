@@ -1,0 +1,15 @@
+:root {
+  --bg: #051419;
+  --bg-light: #091a1f;
+
+  --border: #82959b;
+
+  --primary: #d8a679;
+
+  --tx-normal: #e9e3e4;
+  --tx-button: #000;
+  --tx-dimmed: #82959b;
+
+  --sm-green: rgb(34, 197, 94);
+  --sm-red: rgb(239, 68, 68);
+}
