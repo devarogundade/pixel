@@ -327,7 +327,7 @@ const expandCollection = (collectionAddress: string | undefined) => {
     }
 
     .collections {
-        max-height: 40vh;
+        max-height: 60vh;
     }
 }
 </style>
