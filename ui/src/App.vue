@@ -5,10 +5,13 @@ import { aptosConnectWallet, config, chains } from '@/scripts/connect';
 import { UserResponseStatus } from '@aptos-labs/wallet-standard';
 import { notify } from '@/reactives/notify';
 import Converter from '@/scripts/converter';
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { createWeb3Modal } from '@web3modal/wagmi/vue';
 import { useWeb3Modal } from '@web3modal/wagmi/vue';
 import { watchAccount } from '@wagmi/core';
+import SearchIcon from '@/components/icons/SearchIcon.vue';
+import TokenList from '@/components/TokenList.vue';
+import type { Collection, Token } from '@/scripts/types';
 
 createWeb3Modal({
   wagmiConfig: config,
@@ -19,8 +22,14 @@ createWeb3Modal({
 });
 
 const activeTab = ref(0);
-const walletStore = useWalletStore();
 const modal = useWeb3Modal();
+const tokenListing = ref(false);
+const walletStore = useWalletStore();
+
+const bridgeInput = ref({
+  collection: undefined as Collection | undefined,
+  token: undefined as Token | undefined
+});
 
 const aptosConnect = async () => {
   const response = await aptosConnectWallet.connect();
@@ -35,6 +44,18 @@ const aptosConnect = async () => {
     });
   }
 };
+
+const onTokenChanged = (collection: Collection, token: Token) => {
+  bridgeInput.value.collection = collection;
+  bridgeInput.value.token = token;
+
+  tokenListing.value = false;
+};
+
+watch(activeTab, () => {
+  bridgeInput.value.collection = undefined;
+  bridgeInput.value.token = undefined;
+});
 
 onMounted(() => {
   watchAccount(config, {
@@ -92,9 +113,17 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="bridge_nft">
-                <img src="/images/bayc.png" alt="" class="bridge_nft_image">
-                <p class="bridge_nft_name">Bored Ape Yacht Club</p>
+              <div class="bridge_nft_skin" v-if="!bridgeInput.collection">
+                <div class="bridge_nft_skin_image" @click="tokenListing = true">
+                  <SearchIcon />
+                  <p>Pick NFT</p>
+                </div>
+                <div class="bridge_nft_skin_name"></div>
+              </div>
+
+              <div class="bridge_nft" v-else-if="bridgeInput.collection && bridgeInput.token">
+                <img :src="bridgeInput.token.image" :alt="bridgeInput.token.name" class="bridge_nft_image">
+                <p class="bridge_nft_name">{{ bridgeInput.token.name }}</p>
               </div>
             </div>
 
@@ -108,12 +137,21 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="bridged_nft">
+              <div class="bridged_nft_skin" v-if="!bridgeInput.collection">
+                <div class="bridged_nft_skin_count"></div>
+
+                <div class="bridged_nft_info">
+                  <div class="bridged_nft_skin_image"></div>
+                  <div class="bridged_nft_skin_name"></div>
+                </div>
+              </div>
+
+              <div class="bridged_nft" v-if="bridgeInput.collection && bridgeInput.token">
                 <p class="bridged_nft_count">+1</p>
 
                 <div class="bridged_nft_info">
-                  <img src="/images/bayc.png" alt="" class="bridged_nft_image">
-                  <p class="bridged_nft_name">Bored Ape Yacht Club</p>
+                  <img :src="bridgeInput.token.image" :alt="bridgeInput.token.name" class="bridged_nft_image">
+                  <p class="bridged_nft_name">{{ bridgeInput.token.name }}</p>
                 </div>
               </div>
             </div>
@@ -143,9 +181,17 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="bridge_nft">
-                <img src="/images/bayc.png" alt="" class="bridge_nft_image">
-                <p class="bridge_nft_name">Bored Ape Yacht Club</p>
+              <div class="bridge_nft_skin" v-if="!bridgeInput.collection">
+                <div class="bridge_nft_skin_image" @click="tokenListing = true">
+                  <SearchIcon />
+                  <p>Pick NFT</p>
+                </div>
+                <div class="bridge_nft_skin_name"></div>
+              </div>
+
+              <div class="bridge_nft" v-if="bridgeInput.collection && bridgeInput.token">
+                <img :src="bridgeInput.token.image" :alt="bridgeInput.token.name" class="bridge_nft_image">
+                <p class="bridge_nft_name">{{ bridgeInput.token.name }}</p>
               </div>
             </div>
 
@@ -159,12 +205,21 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="bridged_nft">
-                <p class="bridged_nft_count">≡1</p>
+              <div class="bridged_nft_skin" v-if="!bridgeInput.collection">
+                <div class="bridged_nft_skin_count"></div>
 
                 <div class="bridged_nft_info">
-                  <img src="/images/bayc.png" alt="" class="bridged_nft_image">
-                  <p class="bridged_nft_name">Bored Ape Yacht Club</p>
+                  <div class="bridged_nft_skin_image"></div>
+                  <div class="bridged_nft_skin_name"></div>
+                </div>
+              </div>
+
+              <div class="bridged_nft" v-if="bridgeInput.collection && bridgeInput.token">
+                <p class="bridged_nft_count">+1</p>
+
+                <div class="bridged_nft_info">
+                  <img :src="bridgeInput.token.image" :alt="bridgeInput.token.name" class="bridged_nft_image">
+                  <p class="bridged_nft_name">{{ bridgeInput.token.name }}</p>
                 </div>
               </div>
             </div>
@@ -210,7 +265,10 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
     <SnackbarPop />
+    <TokenList v-if="tokenListing" :chain-id="activeTab === 0 ? 1 : 22" @on-token-changed="onTokenChanged"
+      @close="tokenListing = false" />
   </main>
 </template>
 
@@ -340,7 +398,8 @@ header {
   font-weight: 500;
 }
 
-.bridge_nft {
+.bridge_nft,
+.bridge_nft_skin {
   margin-top: 20px;
   display: flex;
   flex-direction: column;
@@ -349,10 +408,34 @@ header {
   gap: 16px;
 }
 
+.bridge_nft_skin {
+  cursor: pointer;
+}
+
 .bridge_nft_image {
   width: 180px;
   height: 200px;
   object-fit: cover;
+}
+
+.bridge_nft_skin_image {
+  width: 180px;
+  height: 200px;
+  border-image: linear-gradient(45deg, #c464c982, #b6c98c8a);
+  border-width: 1px;
+  border-style: solid;
+  border-image-slice: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.bridge_nft_skin_image p {
+  font-size: 14px;
+  color: var(--tx-dimmed);
+  font-weight: 500;
 }
 
 .bridge_nft_name {
@@ -360,7 +443,17 @@ header {
   color: var(--tx-normal);
 }
 
-.bridged_nft {
+.bridge_nft_skin_name {
+  height: 16px;
+  width: 200px;
+  border-image: linear-gradient(45deg, #c464c982, #b6c98c8a);
+  border-width: 1px;
+  border-style: solid;
+  border-image-slice: 1;
+}
+
+.bridged_nft,
+.bridged_nft_skin {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -380,6 +473,15 @@ header {
   object-fit: cover;
 }
 
+.bridged_nft_skin_image {
+  width: 22px;
+  height: 26px;
+  border-image: linear-gradient(45deg, #64c96c6c, #c9a88c6e);
+  border-width: 1px;
+  border-style: solid;
+  border-image-slice: 1;
+}
+
 .bridged_nft_count {
   font-size: 20px;
   font-weight: 500;
@@ -388,10 +490,29 @@ header {
   background-image: radial-gradient(circle at 100% 20%, #c97e64 0, #d8a679 8%, #97d9d7 70%, #e99e52 110%);
 }
 
+.bridged_nft_skin_count {
+  height: 24px;
+  width: 16px;
+  border-image: linear-gradient(45deg, #64c96c6c, #c9a88c6e);
+  border-width: 1px;
+  border-style: solid;
+  border-image-slice: 1;
+}
+
 .bridged_nft_name {
   font-size: 14px;
   color: var(--tx-normal);
 }
+
+.bridged_nft_skin_name {
+  height: 16px;
+  width: 160px;
+  border-image: linear-gradient(45deg, #64c96c6c, #c9a88c6e);
+  border-width: 1px;
+  border-style: solid;
+  border-image-slice: 1;
+}
+
 
 .import {
   margin-top: 20px;
@@ -404,6 +525,7 @@ header {
   font-weight: 600;
   box-shadow: 4px 4px 0 -1px #051419,
     4px 4px 0 0 #82959b;
+  margin-bottom: 20px;
 }
 
 .marquee {
@@ -413,7 +535,6 @@ header {
   overflow: hidden;
   position: relative;
 }
-
 
 /* would need to be adjusted depending on time */
 .marquee .marqueeone {
@@ -500,6 +621,11 @@ header {
   .marquee img {
     width: 80px;
     height: 100px;
+  }
+
+  .marquee div {
+    padding-right: 50px;
+    gap: 50px;
   }
 }
 </style>
