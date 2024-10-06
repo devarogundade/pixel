@@ -4,7 +4,7 @@ import CloseIcon from './icons/CloseIcon.vue';
 import SearchIcon from './icons/SearchIcon.vue';
 import { findCollectionsByNameOrAddress } from '@/scripts/collection';
 import Converter from '@/scripts/converter';
-import { ref } from 'vue';
+import { ref, onMounted, defineProps, defineEmits, onUnmounted } from 'vue';
 import type { Token } from '@/scripts/types';
 
 const emit = defineEmits(['close', 'onTokenChanged']);
@@ -39,6 +39,14 @@ const expandCollection = (collectionAddress: string | undefined) => {
         activeCollection.value = collectionAddress;
     }
 };
+
+onMounted(() => {
+    document.body.style.overflow = 'hidden';
+});
+
+onUnmounted(() => {
+    document.body.style.overflow = 'auto';
+});
 </script>
 
 <template>
