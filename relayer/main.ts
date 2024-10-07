@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
 import Web3 from 'web3';
+import http from 'http';
 
 import {
     Environment,
@@ -15,7 +16,6 @@ import { reviveTokenOnETH } from './helpers/ethereum';
 dotenv.config();
 
 // ======== Pixel contract addresses ======== //
-const PIXEL_APTOS = "";
 const PIXEL_APTOS_EMITTER = "";
 const PIXEL_ETHEREUM = "";
 
@@ -30,7 +30,7 @@ const DOMAIN = "https://aptospixel.netlify.app";
             missedVaaOptions: {
                 startingSequenceConfig: {
                     '22': BigInt(1), /* aptos */
-                    '1': BigInt(1) /* ethereum */
+                    '2': BigInt(1) /* ethereum holesky */
                 }
             },
             spyEndpoint: process.env.SPY_HOST,
@@ -119,4 +119,38 @@ const DOMAIN = "https://aptospixel.netlify.app";
     // add and configure any other middleware ..
     // start app, blocks until unrecoverable error or process is stopped
     await app.listen();
+})();
+
+(function server(): void {
+    // use hostname 127.0.0.1 unless there exists a preconfigured port
+    const hostname = process.env.HOST || '127.0.0.1';
+
+    // use port 3000 unless there exists a preconfigured port
+    const port = process.env.PORT || 3000;
+
+    http.createServer(function (request: any, response: any) {
+        const headers = {
+            'Access-Control-Allow-Origin': '*', /* @dev First, read about security */
+            'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
+            'Access-Control-Max-Age': 2592000, /* 30 days */
+            'Content-Type': 'application/json'
+        };
+
+        if (request.method === 'OPTIONS') {
+            response.writeHead(204, headers);
+            response.end();
+            return;
+        }
+
+        if (['GET', 'POST'].indexOf(request.method!!) > -1) {
+            response.writeHead(200, headers);
+            response.end(JSON.stringify({ 'status': "OK" }), 'utf-8');
+            return;
+        }
+
+        response.writeHead(405, headers);
+        response.end(`${request.method} is not allowed for the request.`);
+    }).listen(port);
+
+    console.log(`[server]: Server running at http://${hostname}:${port}`);
 })();

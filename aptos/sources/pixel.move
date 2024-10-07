@@ -18,7 +18,7 @@ module pixel::pixel {
     const E_NOT_MINTED: u64 = 501;  // Error for when a token has not been minted on Aptos.
 
     // Constant representing the Ethereum chain ID.
-    const ETHEREUM_CHAIN_ID: u16 = 1;
+    const ETHEREUM_CHAIN_ID: u16 = 2;
 
     // Struct representing the ERC721 contract on Aptos.
     // This stores the collection's metadata and tracks whether specific tokens have been minted.

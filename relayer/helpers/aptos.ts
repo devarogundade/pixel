@@ -2,17 +2,17 @@ import {
     Account,
     Aptos,
     AptosConfig,
-    Network,
+    Network
 } from "@aptos-labs/ts-sdk";
 
 import { AptosPaylaod } from './types';
 
 function parsePayload(hexPayload: string): AptosPaylaod {
     return {
-        toContractId: hexPayload.slice(2, 66),
-        token: "",
-        tokenId: 0,
-        receiver: ""
+        toContractId: hexPayload.slice(0, 64),
+        token: hexPayload.slice(64, 128),
+        tokenId: parseInt(hexPayload.slice(128, 130)),
+        receiver: hexPayload.slice(130, 192)
     };
 }
 

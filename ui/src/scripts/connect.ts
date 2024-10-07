@@ -1,13 +1,13 @@
 import { Network } from "@aptos-labs/ts-sdk";
 import { AptosConnectWallet } from "@aptos-connect/wallet-adapter-plugin";
-import { sepolia } from '@wagmi/core/chains';
+import { holesky } from '@wagmi/core/chains';
 import { walletConnect } from '@wagmi/connectors';
 import { defaultWagmiConfig } from '@web3modal/wagmi';
 
 export const aptosConnectWallet = new AptosConnectWallet({
     network: Network.TESTNET,
     dappId: import.meta.env.VITE_APTOS_DAPP_ID,
-    dappName: 'Pixel'
+    dappName: 'AptosPixel'
 });
 
 const metadata = {
@@ -17,7 +17,7 @@ const metadata = {
     icons: ['https://avatars.githubusercontent.com/u/37784886']
 };
 
-export const chains = [sepolia];
+export const chains = [holesky];
 
 export const config = defaultWagmiConfig({
     // @ts-ignore
