@@ -119,6 +119,8 @@ contract Pixel is Ownable {
             receiver.bytes32ToAddress(),
             tokenId
         );
+
+        // _wormhole.parseAndVerifyVM(encodedVM);
     }
 
     /// @notice Allows the contract owner to set peer contract addresses for specific chain IDs.
