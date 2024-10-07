@@ -15,6 +15,19 @@ export type Collection = {
 
 export type Token = {
     name: string;
-    image: string;
+    image: string | undefined;
     tokenId: string;
 };
+
+export interface CurrentTokenOwnershipV2 {
+    current_token_data: TokenData;
+    amount: number;
+}
+
+export interface TokenData {
+    collection_id: string;
+    token_name: string;
+    description: string;
+    token_uri: string;
+    token_data_id: string;
+}

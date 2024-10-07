@@ -1,20 +1,12 @@
-// This setup uses Hardhat Ignition to manage smart contract deployments.
-// Learn more about it at https://hardhat.org/ignition
-
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-const JAN_1ST_2030 = 1893456000;
-const ONE_GWEI: bigint = 1_000_000_000n;
+const RELAYER: string = "0x60E0a0eAd051314E7510AE803334A97f13E6ff21";
+const WORMHOLE_CORE: string = "0x706abc4E45D419950511e474C7B9Ed348A4a716c";
 
-const LockModule = buildModule("LockModule", (m) => {
-  const unlockTime = m.getParameter("unlockTime", JAN_1ST_2030);
-  const lockedAmount = m.getParameter("lockedAmount", ONE_GWEI);
+const PixelModule = buildModule("PixelModule", (m) => {
+  const pixel = m.contract("Pixel", [RELAYER, WORMHOLE_CORE]);
 
-  const lock = m.contract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  return { lock };
+  return { pixel };
 });
 
-export default LockModule;
+export default PixelModule;

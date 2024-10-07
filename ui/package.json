@@ -13,6 +13,7 @@
   "dependencies": {
     "@aptos-connect/wallet-adapter-plugin": "^2.0.2",
     "@aptos-labs/wallet-adapter-vue": "^0.3.0",
+    "@covalenthq/client-sdk": "^2.1.1",
     "@wagmi/connectors": "^5.1.15",
     "@wagmi/core": "^2.13.8",
     "@web3modal/wagmi": "^5.1.11",
