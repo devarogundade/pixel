@@ -7,7 +7,7 @@ import {
     StandardRelayerApp,
     StandardRelayerContext,
 } from "@wormhole-foundation/relayer-engine";
-import { CHAIN_ID_APTOS, CHAIN_ID_ETH } from "@certusone/wormhole-sdk";
+import { CHAIN_ID_APTOS, CHAIN_ID_HOLESKY } from "@certusone/wormhole-sdk";
 
 import { extractMetadata } from './helpers/common';
 import { parsePayload, mintTokenOnAptos } from './helpers/aptos';
@@ -16,8 +16,8 @@ import { reviveTokenOnETH } from './helpers/ethereum';
 dotenv.config();
 
 // ======== Pixel contract addresses ======== //
-const PIXEL_APTOS_EMITTER = "";
-const PIXEL_ETHEREUM = "";
+const PIXEL_APTOS_EMITTER = "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625";
+const PIXEL_ETHEREUM = "0xC7Cd3F55b10b6385B9230BC4e8BF4f38010C13c6";
 
 const DOMAIN = "https://aptospixel.netlify.app";
 
@@ -30,13 +30,13 @@ const DOMAIN = "https://aptospixel.netlify.app";
             missedVaaOptions: {
                 startingSequenceConfig: {
                     '22': BigInt(1), /* aptos */
-                    '2': BigInt(1) /* ethereum holesky */
+                    '10006': BigInt(1) /* ethereum holesky */
                 }
             },
-            spyEndpoint: process.env.SPY_HOST,
-            redis: {
-                host: process.env.REDIS_HOST
-            }
+            // spyEndpoint: process.env.SPY_HOST,
+            // redis: {
+            //     host: process.env.REDIS_HOST
+            // }
         },
     );
 
@@ -44,8 +44,8 @@ const DOMAIN = "https://aptospixel.netlify.app";
     // invoked on finding a VAA that matches the filter
     app.multiple(
         {
-            [CHAIN_ID_APTOS]: PIXEL_APTOS_EMITTER,
-            [CHAIN_ID_ETH]: PIXEL_ETHEREUM
+            // [CHAIN_ID_APTOS]: PIXEL_APTOS_EMITTER,
+            [CHAIN_ID_HOLESKY]: PIXEL_ETHEREUM
         },
         async (ctx) => {
             const vaa = ctx.vaa;
@@ -61,6 +61,7 @@ const DOMAIN = "https://aptospixel.netlify.app";
             const sourceTxHash = ctx.sourceTxHash!;
 
             console.log('⚡[new vaa]: ', hexPayload);
+            console.log('⚡[source tran hash]: ', sourceTxHash);
 
             // Check for emitter chain.
             if (vaa?.emitterChain == CHAIN_ID_APTOS) {
@@ -80,20 +81,22 @@ const DOMAIN = "https://aptospixel.netlify.app";
                 const params = web3.eth.abi.decodeParameters(
                     ['bytes32', 'bytes32', 'uint256', 'string', 'string', 'string', 'bytes32'],
                     hexPayload
-                );
+                ) as Array<string>;
 
-                const toContractId = params[0];
-                const source_erc721_address = params[1];
-                const tokenId = params[2];
-                const collection = params[3];
-                const collection_description = params[4];
-                const token_uri = params[5];
-                const receiver = params[6];
+                const [
+                    toContractId,
+                    source_erc721_address,
+                    tokenId,
+                    collection,
+                    collection_description,
+                    token_uri,
+                    receiver
+                ] = params;
 
                 try {
                     const metadata = await extractMetadata(token_uri);
 
-                    const txHash = await mintTokenOnAptos(
+                    console.log(
                         toContractId,
                         source_erc721_address,
                         collection,
@@ -102,11 +105,23 @@ const DOMAIN = "https://aptospixel.netlify.app";
                         `${metadata.name} ${tokenId}`,
                         metadata.decription,
                         metadata.image,
-                        tokenId,
                         receiver
                     );
 
-                    console.log(txHash);
+                    // const txHash = await mintTokenOnAptos(
+                    //     toContractId,
+                    //     source_erc721_address,
+                    //     collection,
+                    //     collection_description,
+                    //     `${DOMAIN}/${CHAIN_ID_ETH}/${source_erc721_address}`,
+                    //     `${metadata.name} ${tokenId}`,
+                    //     metadata.decription,
+                    //     metadata.image,
+                    //     tokenId,
+                    //     receiver
+                    // );
+
+                    // console.log(txHash);
                 } catch (error) {
                     console.log(error);
                 }

@@ -6,6 +6,11 @@ import { findCollectionsByNameOrAddress } from '@/scripts/collection';
 import Converter from '@/scripts/converter';
 import { ref, onMounted, defineProps, defineEmits, onUnmounted } from 'vue';
 import type { Token } from '@/scripts/types';
+import { getTokens as getAptosTokens } from '@/scripts/nodit';
+import { getTokens as getEthereumTokens } from '@/scripts/covalent';
+import { useWalletStore } from '@/stores/wallet';
+import { HOLESKY_ID, APTOS_ID } from '@/scripts/connect';
+import ProgressBox from './ProgressBox.vue';
 
 const emit = defineEmits(['close', 'onTokenChanged']);
 const props = defineProps({
@@ -13,31 +18,33 @@ const props = defineProps({
 });
 
 const searchValue = ref('');
-const tokens = ref<Token[]>([
-    {
-        tokenId: '0x00000001',
-        name: 'Happy Ape',
-        image: '/images/nft1.webp'
-    },
-    {
-        tokenId: '0x00000001',
-        name: 'Happy Ape',
-        image: '/images/nft2.webp'
-    },
-    {
-        tokenId: '0x00000001',
-        name: 'Happy Ape',
-        image: '/images/nft3.avif'
-    }
-]);
+const tokens = ref<Token[] | null>([]);
 const activeCollection = ref<string | undefined>(undefined);
+const fetchingTokens = ref(false);
+const walletStore = useWalletStore();
 
-const expandCollection = (collectionAddress: string | undefined) => {
-    if (activeCollection.value == collectionAddress) {
+const expandCollection = (collection: string | undefined) => {
+    if (activeCollection.value == collection) {
         activeCollection.value = undefined;
+        tokens.value = [];
     } else {
-        activeCollection.value = collectionAddress;
+        activeCollection.value = collection;
+        if (!collection) {
+            tokens.value = [];
+            return;
+        }
+        fetchTokens(collection);
     }
+};
+
+const fetchTokens = async (collection: string) => {
+    fetchingTokens.value = true;
+    if (props.chainId == APTOS_ID && walletStore.aptosAddress) {
+        tokens.value = await getAptosTokens(walletStore.aptosAddress, collection);
+    } else if (props.chainId == HOLESKY_ID && walletStore.ethereumAddress) {
+        tokens.value = await getEthereumTokens(walletStore.ethereumAddress, collection);
+    }
+    fetchingTokens.value = false;
 };
 
 onMounted(() => {
@@ -63,14 +70,6 @@ onUnmounted(() => {
                     <input type="text" v-model="searchValue" placeholder="Search by collection name or address">
                 </div>
             </div>
-
-            <!-- <div class="popular_collections">
-                <button class="popular_collection" v-for="collection, index in popularCollection(props.chainId)"
-                    :key="index">
-                    <img :src="collection.image" :alt="collection.name">
-                    <p>{{ collection.symbol }}</p>
-                </button>
-            </div> -->
 
             <div class="collections">
                 <div class="collection_detail"
@@ -98,12 +97,24 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <div class="tokens" v-if="activeCollection == collection.addresses[props.chainId]">
+                    <div class="progress"
+                        v-if="activeCollection == collection.addresses[props.chainId] && fetchingTokens">
+                        <ProgressBox />
+                    </div>
+
+
+                    <div class="empty"
+                        v-if="activeCollection == collection.addresses[props.chainId] && !fetchingTokens && (!tokens || tokens.length == 0)">
+                        <p>No tokens found.</p>
+                    </div>
+
+                    <div class="tokens" v-if="activeCollection == collection.addresses[props.chainId] && tokens">
                         <div class="token" v-for="token, index in tokens" :key="index"
                             @click="emit('onTokenChanged', collection, token)">
                             <div class="token_info">
                                 <img :src="token.image" :alt="token.name">
-                                <p>Token Id <br> {{ Converter.fineAddress(token.tokenId, 2) }}</p>
+                                <p>Token Id <br> {{ HOLESKY_ID ? token.tokenId : Converter.fineAddress(token.tokenId,
+                                    2) }}</p>
                             </div>
                         </div>
                     </div>
@@ -180,36 +191,6 @@ onUnmounted(() => {
     font-weight: 500;
 }
 
-/* .popular_collections {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px 12px;
-    padding: 16px 20px;
-}
-
-.popular_collection {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 4px;
-    padding-right: 8px;
-}
-
-.popular_collection img {
-    width: 24px;
-    height: 24px;
-    object-fit: cover;
-}
-
-.popular_collection p {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--tx-normal);
-} */
-
 .collections {
     height: 420px;
     max-height: 50vh;
@@ -283,6 +264,27 @@ onUnmounted(() => {
 }
 
 .info p {
+    color: var(--tx-dimmed);
+    font-size: 12px;
+    text-align: center;
+}
+
+.progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+}
+
+.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+}
+
+.empty p {
+
     color: var(--tx-dimmed);
     font-size: 12px;
     text-align: center;

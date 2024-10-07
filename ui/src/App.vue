@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import SnackbarPop from '@/components/SnackbarPop.vue';
 import { useWalletStore } from '@/stores/wallet';
-import { aptosConnectWallet, config, chains } from '@/scripts/connect';
+import { aptosConnectWallet, config, chains, HOLESKY_ID, APTOS_ID } from '@/scripts/connect';
 import { UserResponseStatus } from '@aptos-labs/wallet-standard';
 import { notify } from '@/reactives/notify';
 import Converter from '@/scripts/converter';
@@ -12,6 +12,8 @@ import { watchAccount } from '@wagmi/core';
 import SearchIcon from '@/components/icons/SearchIcon.vue';
 import TokenList from '@/components/TokenList.vue';
 import type { Collection, Token } from '@/scripts/types';
+import { getAllowance, approveToken } from '@/scripts/erc721';
+import { ContractID, bridgeToken } from '@/scripts/ethereum';
 
 createWeb3Modal({
   wagmiConfig: config,
@@ -25,10 +27,13 @@ const activeTab = ref(0);
 const modal = useWeb3Modal();
 const tokenListing = ref(false);
 const walletStore = useWalletStore();
+const approving = ref(false);
+const bridging = ref(false);
 
 const bridgeInput = ref({
   collection: undefined as Collection | undefined,
-  token: undefined as Token | undefined
+  token: undefined as Token | undefined,
+  allowance: false
 });
 
 const aptosConnect = async () => {
@@ -45,11 +50,131 @@ const aptosConnect = async () => {
   }
 };
 
-const onTokenChanged = (collection: Collection, token: Token) => {
+const onTokenChanged = async (collection: Collection, token: Token) => {
   bridgeInput.value.collection = collection;
   bridgeInput.value.token = token;
 
   tokenListing.value = false;
+
+  updateApprovals();
+};
+
+const updateApprovals = async () => {
+  if (!bridgeInput.value.collection || !bridgeInput.value.token) return;
+
+  if (activeTab.value === 0) {
+    bridgeInput.value.allowance = await getAllowance(
+      bridgeInput.value.collection,
+      bridgeInput.value.token,
+      ContractID
+    );
+  } else {
+    bridgeInput.value.allowance = true;
+  }
+};
+
+const bridge = async () => {
+  if (!bridgeInput.value.collection || !bridgeInput.value.token) return;
+
+  if (!walletStore.ethereumAddress || !walletStore.aptosAddress) {
+    notify.push({
+      title: 'Connect Wallet',
+      description: 'Wallet connection is required.',
+      category: 'error'
+    });
+    return;
+  }
+
+  if (bridging.value) {
+    notify.push({
+      title: 'Please wait',
+      description: 'Approval in progress.',
+      category: 'error'
+    });
+    return;
+  }
+
+  bridging.value = true;
+
+  const txHash = await bridgeToken(
+    bridgeInput.value.collection,
+    bridgeInput.value.token,
+    walletStore.aptosAddress
+  );
+
+  if (txHash) {
+    notify.push({
+      title: 'Import completed',
+      description: 'Transaction was sent succesfully.',
+      category: 'success',
+      linkTitle: 'View Trx',
+      linkUrl: `https://holesky.etherscan.io/tx/${txHash}`
+    });
+
+    bridgeInput.value.collection = undefined;
+    bridgeInput.value.token = undefined;
+    bridgeInput.value.allowance = false;
+  } else {
+    notify.push({
+      title: 'Transaction failed',
+      description: 'Try again later.',
+      category: 'error'
+    });
+  }
+
+  bridging.value = false;
+};
+
+const approve = async () => {
+  if (!bridgeInput.value.collection || !bridgeInput.value.token) return;
+
+  if (!walletStore.ethereumAddress) {
+    notify.push({
+      title: 'Connect Wallet',
+      description: 'Wallet connection is required.',
+      category: 'error'
+    });
+    return;
+  }
+
+  if (approving.value) {
+    notify.push({
+      title: 'Please wait',
+      description: 'Approval in progress.',
+      category: 'error'
+    });
+    return;
+  }
+
+  approving.value = true;
+
+  const txHash = await approveToken(
+    bridgeInput.value.collection,
+    bridgeInput.value.token,
+    ContractID
+  );
+
+  if (txHash) {
+    notify.push({
+      title: 'Approval completed',
+      description: 'Transaction was sent succesfully.',
+      category: 'success',
+      linkTitle: 'View Trx',
+      linkUrl: `https://holesky.etherscan.io/tx/${txHash}`
+    });
+
+    updateApprovals();
+
+    bridge();
+  } else {
+    notify.push({
+      title: 'Transaction failed',
+      description: 'Try again later.',
+      category: 'error'
+    });
+  }
+
+  approving.value = false;
 };
 
 watch(activeTab, () => {
@@ -78,7 +203,7 @@ onMounted(() => {
           <div class="actions">
             <button @click="modal.open()">
               {{ walletStore.ethereumAddress ? `${Converter.fineAddress(walletStore.ethereumAddress, 4)}` :
-                'Connect to Ethereum'
+                'Wallet Connect'
               }}
             </button>
             <button @click="aptosConnect">
@@ -167,7 +292,24 @@ onMounted(() => {
               </div>
             </div>
 
-            <button class="import">Import NFT</button>
+            <div class="imports" v-if="!walletStore.ethereumAddress || !walletStore.aptosAddress">
+              <button @click="modal.open()" class="import">
+                {{ walletStore.ethereumAddress ? `${Converter.fineAddress(walletStore.ethereumAddress, 4)}` :
+                  'Wallet Connect'
+                }}
+              </button>
+              <button @click="aptosConnect" class="import">
+                {{ walletStore.aptosAddress ? `${Converter.fineAddress(walletStore.aptosAddress, 4)}` :
+                  'Aptos Connect'
+                }}
+              </button>
+            </div>
+
+            <button class="import" v-else-if="!bridgeInput.allowance" @click="approve">{{ approving ? 'Approving..' :
+              'Approve '
+              }}</button>
+
+            <button v-else class="import" @click="bridge">{{ bridging ? 'Importing..' : 'Import NFT' }}</button>
           </div>
 
           <div class="redeem_box" v-else>
@@ -267,8 +409,8 @@ onMounted(() => {
     </section>
 
     <SnackbarPop />
-    <TokenList v-if="tokenListing" :chain-id="activeTab === 0 ? 1 : 22" @on-token-changed="onTokenChanged"
-      @close="tokenListing = false" />
+    <TokenList v-if="tokenListing" :chain-id="activeTab === 0 ? HOLESKY_ID : APTOS_ID"
+      @on-token-changed="onTokenChanged" @close="tokenListing = false" />
   </main>
 </template>
 
@@ -513,6 +655,11 @@ header {
   border-image-slice: 1;
 }
 
+.imports {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
 
 .import {
   margin-top: 20px;

@@ -17,18 +17,18 @@ services:
       - "7073:7073"
     platform: linux/amd64
       
-  pixel_relayer:
-    depends_on:
-      - guardiand
-      - redis
-    image: devarogundade/pixel_relayer:latest
-    container_name: pixel_relayer
-    restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      - REDIS_HOST=redis
-      - SPY_HOST=guardiand:7073
+  # pixel_relayer:
+  #   depends_on:
+  #     - guardiand
+  #     - redis
+  #   image: devarogundade/pixel_relayer:latest
+  #   container_name: pixel_relayer
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - REDIS_HOST=redis
+  #     - SPY_HOST=guardiand:7073
 
 volumes:
   redis-data:

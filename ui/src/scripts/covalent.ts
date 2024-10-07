@@ -4,19 +4,22 @@ import type { Token } from "./types";
 async function getTokens(address: string, collection: string): Promise<Token[] | null> {
     try {
         const client = new GoldRushClient(import.meta.env.VITE_COVALENT_API_KEY);
-        const response = await client.NftService.checkOwnershipInNft(
+
+        const response = await client.NftService.getNftsForAddress(
             "eth-holesky",
             address,
-            collection
+            { withUncached: true }
         );
 
         if (!response.data || !response.data.items) { return null; }
 
-        return response.data.items.map((item) => {
+        return response.data.items
+            .filter(item => item.contract_address?.toLowerCase() == collection.toLowerCase())
+        [0].nft_data?.map((item) => {
             return {
-                name: item.nft_data?.external_data?.name || 'Unkwown',
-                description: item.nft_data?.external_data?.description || 'Unkwown',
-                image: item.nft_data?.external_data?.image,
+                name: JSON.parse(item.token_url || '{}').name,
+                description: JSON.parse(item.token_url || '{}').description,
+                image: JSON.parse(item.token_url || '{}').image,
                 tokenId: String(item.token_id)
             };
         });

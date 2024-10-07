@@ -6,7 +6,7 @@ export const tokens: Collection[] = [
         symbol: "BAYC",
         image: "/images/bayc.png",
         addresses: {
-            1: "0x59a69f13E48e9B79650455c539bf5BB972d1eBF7",
+            10006: "0x626e574E9AE8860fF123458d4a38f1B9844FE9C1",
             22: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         }
     },
@@ -15,7 +15,7 @@ export const tokens: Collection[] = [
         symbol: "PUNKS",
         image: "/images/punks.png",
         addresses: {
-            1: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            10006: "0x9A19e8574668dca5C4750eB642C614b7e5836cF4",
             22: "0x14E0826c58f9C2a3a1B46b51F6d4705bCf0d6a22"
         }
     }

@@ -1,7 +1,6 @@
 import Web3 from 'web3';
 
-// @ts-ignore
-import ethPixelABI from "./abis/ethereum/pixel.json";
+import ethPixelABI from "../abis/ethereum/pixel.json";
 
 const SELOPIA_RPC = "";
 

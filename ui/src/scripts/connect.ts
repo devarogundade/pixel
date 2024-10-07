@@ -4,6 +4,9 @@ import { holesky } from '@wagmi/core/chains';
 import { walletConnect } from '@wagmi/connectors';
 import { defaultWagmiConfig } from '@web3modal/wagmi';
 
+export const HOLESKY_ID: number = 10006;
+export const APTOS_ID: number = 22;
+
 export const aptosConnectWallet = new AptosConnectWallet({
     network: Network.TESTNET,
     dappId: import.meta.env.VITE_APTOS_DAPP_ID,

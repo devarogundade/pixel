@@ -18,7 +18,7 @@ module pixel::pixel {
     const E_NOT_MINTED: u64 = 501;  // Error for when a token has not been minted on Aptos.
 
     // Constant representing the Ethereum chain ID.
-    const ETHEREUM_CHAIN_ID: u16 = 2;
+    const HOLESKY_CHAIN_ID: u16 = 10006;
 
     // Struct representing the ERC721 contract on Aptos.
     // This stores the collection's metadata and tracks whether specific tokens have been minted.
@@ -91,7 +91,7 @@ module pixel::pixel {
         
         // Retrieve the TokenController and burn the token on Aptos.
         let token_controller = borrow_global<TokenController>(token_controller_address);
-        token::burn(token_controller.burn_ref);
+        // token::burn(token_controller.burn_ref);
 
         // Initiate the cross-chain redemption process to mint the corresponding token on Ethereum.
         redeem_token_on_ethereum(
@@ -118,7 +118,7 @@ module pixel::pixel {
         let fee_coins = coin::withdraw<AptosCoin>(sender, message_fee);
 
         // Retrieve the target contract address on Ethereum from the peer contracts table.
-        let to_contract_id = *table::borrow(&state.peer_contracts, ETHEREUM_CHAIN_ID);
+        let to_contract_id = *table::borrow(&state.peer_contracts, HOLESKY_CHAIN_ID);
 
         // Construct the payload for the cross-chain message.
         let payload = vector::empty<u8>(); 
