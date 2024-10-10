@@ -33,10 +33,10 @@ const DOMAIN = "https://aptospixel.netlify.app";
                     '10006': BigInt(1) /* ethereum holesky */
                 }
             },
-            // spyEndpoint: process.env.SPY_HOST,
-            // redis: {
-            //     host: process.env.REDIS_HOST
-            // }
+            spyEndpoint: process.env.SPY_HOST,
+            redis: {
+                host: process.env.REDIS_HOST
+            }
         },
     );
 
