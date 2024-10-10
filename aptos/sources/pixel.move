@@ -90,15 +90,18 @@ module pixel::pixel {
         table::upsert(&mut erc721.token_addresses, token_address, false);
         
         // Retrieve the TokenController and burn the token on Aptos.
-        let token_controller = borrow_global<TokenController>(token_controller_address);
-        // token::burn(token_controller.burn_ref);
+        let TokenController {
+            burn_ref, 
+            source_token_id
+        } = move_from<TokenController>(token_controller_address);
+        token::burn(burn_ref);
 
         // Initiate the cross-chain redemption process to mint the corresponding token on Ethereum.
         redeem_token_on_ethereum(
             sender,
             receiver,
             erc721.source_erc721_address,
-            token_controller.source_token_id
+            source_token_id
         );
     }
 
