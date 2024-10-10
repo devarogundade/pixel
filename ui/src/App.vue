@@ -14,6 +14,7 @@ import TokenList from '@/components/TokenList.vue';
 import type { Collection, Token } from '@/scripts/types';
 import { getAllowance, approveToken } from '@/scripts/erc721';
 import { ContractID, bridgeToken } from '@/scripts/ethereum';
+import { redeemToken } from '@/scripts/aptos';
 
 createWeb3Modal({
   wagmiConfig: config,
@@ -88,7 +89,7 @@ const bridge = async () => {
   if (bridging.value) {
     notify.push({
       title: 'Please wait',
-      description: 'Approval in progress.',
+      description: 'Import in progress.',
       category: 'error'
     });
     return;
@@ -105,6 +106,58 @@ const bridge = async () => {
   if (txHash) {
     notify.push({
       title: 'Import completed',
+      description: 'Transaction was sent succesfully.',
+      category: 'success',
+      linkTitle: 'View Trx',
+      linkUrl: `https://holesky.etherscan.io/tx/${txHash}`
+    });
+
+    bridgeInput.value.collection = undefined;
+    bridgeInput.value.token = undefined;
+    bridgeInput.value.allowance = false;
+  } else {
+    notify.push({
+      title: 'Transaction failed',
+      description: 'Try again later.',
+      category: 'error'
+    });
+  }
+
+  bridging.value = false;
+};
+
+const redeem = async () => {
+  if (!bridgeInput.value.collection || !bridgeInput.value.token) return;
+
+  if (!walletStore.ethereumAddress || !walletStore.aptosAddress) {
+    notify.push({
+      title: 'Connect Wallet',
+      description: 'Wallet connection is required.',
+      category: 'error'
+    });
+    return;
+  }
+
+  if (bridging.value) {
+    notify.push({
+      title: 'Please wait',
+      description: 'Redeem in progress.',
+      category: 'error'
+    });
+    return;
+  }
+
+  bridging.value = true;
+
+  const txHash = await redeemToken(
+    bridgeInput.value.collection,
+    bridgeInput.value.token,
+    walletStore.ethereumAddress
+  );
+
+  if (txHash) {
+    notify.push({
+      title: 'Redeem completed',
       description: 'Transaction was sent succesfully.',
       category: 'success',
       linkTitle: 'View Trx',
@@ -377,7 +430,20 @@ onMounted(() => {
               </div>
             </div>
 
-            <button class="import">Redeem NFT</button>
+            <div class="imports" v-if="!walletStore.ethereumAddress || !walletStore.aptosAddress">
+              <button @click="modal.open()" class="import">
+                {{ walletStore.ethereumAddress ? `${Converter.fineAddress(walletStore.ethereumAddress, 4)}` :
+                  'Wallet Connect'
+                }}
+              </button>
+              <button @click="aptosConnect" class="import">
+                {{ walletStore.aptosAddress ? `${Converter.fineAddress(walletStore.aptosAddress, 4)}` :
+                  'Aptos Connect'
+                }}
+              </button>
+            </div>
+
+            <button v-else class="import" @click="redeem">{{ bridging ? 'Redeeming..' : 'Redeem NFT' }}</button>
           </div>
         </div>
       </div>
