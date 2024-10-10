@@ -96,18 +96,6 @@ const DOMAIN = "https://aptospixel.netlify.app";
                 try {
                     const metadata = await extractMetadata(token_uri);
 
-                    console.log(
-                        toContractId,
-                        source_erc721_address,
-                        collection,
-                        collection_description,
-                        `${DOMAIN}/${CHAIN_ID_HOLESKY}/${source_erc721_address}`,
-                        `${metadata.name} ${tokenId}`,
-                        metadata.decription,
-                        metadata.image,
-                        receiver
-                    );
-
                     const txHash = await mintTokenOnAptos(
                         toContractId,
                         source_erc721_address,
