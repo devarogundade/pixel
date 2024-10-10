@@ -13,9 +13,13 @@ async function getTokens(address: string, collection: string): Promise<Token[] |
 
         if (!response.data || !response.data.items) { return null; }
 
-        return response.data.items
+        const data = response.data.items
             .filter(item => item.contract_address?.toLowerCase() == collection.toLowerCase())
-        [0].nft_data?.map((item) => {
+        [0].nft_data;
+
+        if (!data) { return null; }
+
+        return data.map((item) => {
             return {
                 name: JSON.parse(item.token_url || '{}').name,
                 description: JSON.parse(item.token_url || '{}').description,

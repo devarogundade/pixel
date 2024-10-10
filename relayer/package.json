@@ -16,6 +16,7 @@
     "@aptos-labs/ts-sdk": "^1.29.0",
     "@certusone/wormhole-sdk": "^0.10.18",
     "@wormhole-foundation/relayer-engine": "^0.3.2",
+    "@wormhole-foundation/sdk": "^0.10.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",

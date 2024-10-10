@@ -44,7 +44,7 @@ const DOMAIN = "https://aptospixel.netlify.app";
     // invoked on finding a VAA that matches the filter
     app.multiple(
         {
-            // [CHAIN_ID_APTOS]: PIXEL_APTOS_EMITTER,
+            [22]: PIXEL_APTOS_EMITTER,
             [CHAIN_ID_HOLESKY]: PIXEL_ETHEREUM
         },
         async (ctx) => {
@@ -75,7 +75,7 @@ const DOMAIN = "https://aptospixel.netlify.app";
                 );
 
                 console.log(txHash);
-            } else if (vaa?.emitterChain == CHAIN_ID_ETH) {
+            } else if (vaa?.emitterChain == CHAIN_ID_HOLESKY) {
                 const web3 = new Web3();
 
                 const params = web3.eth.abi.decodeParameters(
@@ -101,27 +101,27 @@ const DOMAIN = "https://aptospixel.netlify.app";
                         source_erc721_address,
                         collection,
                         collection_description,
-                        `${DOMAIN}/${CHAIN_ID_ETH}/${source_erc721_address}`,
+                        `${DOMAIN}/${CHAIN_ID_HOLESKY}/${source_erc721_address}`,
                         `${metadata.name} ${tokenId}`,
                         metadata.decription,
                         metadata.image,
                         receiver
                     );
 
-                    // const txHash = await mintTokenOnAptos(
-                    //     toContractId,
-                    //     source_erc721_address,
-                    //     collection,
-                    //     collection_description,
-                    //     `${DOMAIN}/${CHAIN_ID_ETH}/${source_erc721_address}`,
-                    //     `${metadata.name} ${tokenId}`,
-                    //     metadata.decription,
-                    //     metadata.image,
-                    //     tokenId,
-                    //     receiver
-                    // );
+                    const txHash = await mintTokenOnAptos(
+                        toContractId,
+                        source_erc721_address,
+                        collection,
+                        collection_description,
+                        `${DOMAIN}/${CHAIN_ID_HOLESKY}/${source_erc721_address}`,
+                        `${metadata.name} ${tokenId}`,
+                        metadata.decription,
+                        metadata.image,
+                        parseInt(tokenId),
+                        receiver
+                    );
 
-                    // console.log(txHash);
+                    console.log(txHash);
                 } catch (error) {
                     console.log(error);
                 }
