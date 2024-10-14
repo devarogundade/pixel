@@ -2,6 +2,7 @@ import { config, HOLESKY_ID } from "./connect";
 import type { Token, Collection } from "./types";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
 import { abi as pixelAbi } from '@/abis/pixel';
+import Converter from "./converter";
 
 export const ContractID = "0xC7Cd3F55b10b6385B9230BC4e8BF4f38010C13c6";
 
@@ -20,7 +21,7 @@ export async function bridgeToken(
                 BigInt(token.tokenId),
                 receiver
             ],
-            value: BigInt(0)
+            value: BigInt(Converter.toWei('0.00021'))
         });
 
         const receipt = await waitForTransactionReceipt(config, { hash: result });
