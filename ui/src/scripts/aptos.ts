@@ -10,17 +10,13 @@ export async function redeemToken(
     receiver: string
 ): Promise<string | null> {
     try {
-        const tokenControllerAddress = await getTokenControllerAddress(token.tokenId);
-
-        if (!tokenControllerAddress) return null;
-
         const response = await aptosConnectWallet.signAndSubmitTransaction({
             payload: {
                 function: `${pixelId}::pixel::redeem`,
                 functionArguments: [
                     token.tokenId,
                     collection.addresses[HOLESKY_ID],
-                    tokenControllerAddress,
+                    token.tokenId,
                     receiver
                 ]
             }
@@ -35,9 +31,4 @@ export async function redeemToken(
         console.log(error);
         return null;
     }
-}
-
-async function getTokenControllerAddress(tokenId: string): Promise<string | null> {
-    // TO DO
-    return tokenId;
 }
