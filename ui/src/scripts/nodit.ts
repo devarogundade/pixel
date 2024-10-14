@@ -2,8 +2,7 @@ import type { CurrentTokenOwnershipV2, Token } from "./types";
 import axios from 'axios';
 
 const client = axios.create({
-    baseURL: `https://api.testnet.aptoslabs.com/v1/graphql`,
-    // baseURL: `https://aptos-testnet.nodit.io/${import.meta.env.VITE_NODIT_KEY}/v1/graphql`,
+    baseURL: import.meta.env.VITE_NODIT_URL_KEY
 });
 
 export async function getTokens(address: string, collection: string): Promise<Token[] | null> {
