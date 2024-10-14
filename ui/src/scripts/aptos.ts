@@ -1,5 +1,5 @@
 import type { Collection, Token } from "./types";
-import { aptosConnectWallet, HOLESKY_ID } from './connect';
+import { APTOS_ID, aptosConnectWallet } from './connect';
 import { UserResponseStatus } from '@aptos-labs/wallet-standard';
 
 const pixelId: string = '0x61d2e34834990feeb51f6823d407a41cd7719ceb7ad49ce857b5c46e1cd4ff21';
@@ -15,7 +15,7 @@ export async function redeemToken(
                 function: `${pixelId}::pixel::redeem`,
                 functionArguments: [
                     token.tokenId,
-                    collection.addresses[HOLESKY_ID],
+                    collection.addresses[APTOS_ID],
                     token.tokenId,
                     receiver
                 ]
