@@ -15,7 +15,7 @@ export async function redeemToken(
                 function: `${pixelId}::pixel::redeem`,
                 functionArguments: [
                     token.tokenId,
-                    collection.addresses[APTOS_ID],
+                    collection.aptosErc721,
                     token.tokenId,
                     receiver
                 ]

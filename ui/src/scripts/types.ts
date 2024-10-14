@@ -11,6 +11,7 @@ export type Collection = {
     symbol: string;
     image: string;
     addresses: { [key: number]: `0x${string}` | undefined; };
+    aptosErc721: string;
 };
 
 export type Token = {
