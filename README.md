@@ -2,7 +2,12 @@
 
 Aptos Pixel is a cutting-edge web3 application designed to bridge NFTs from Ethereum to Aptos securely. Leveraging Wormhole technology, Aptos Pixel allows users to lock their NFTs on Ethereum and mint a replica on the Aptos blockchain. This process ensures seamless asset management across chains while maintaining security and flexibility. With Aptos Pixel, users can enjoy the benefits of Aptos' fast, scalable, and low-cost network while holding their favorite NFTs from Ethereum.
 
+![Screenshot 2024-10-14 092107](https://github.com/user-attachments/assets/2250034e-5506-4ac5-b433-caee697785b8)
+
+![Screenshot 2024-10-14 092120](https://github.com/user-attachments/assets/f27072e5-c9f5-4427-bc4e-affdfa3b7a31)
+
 ## How it Works
+
 
 1. Users connect their Ethereum wallet and choose an NFT they wish to bridge.
 
