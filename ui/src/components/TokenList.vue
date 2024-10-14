@@ -113,7 +113,8 @@ onUnmounted(() => {
                             @click="emit('onTokenChanged', collection, token)">
                             <div class="token_info">
                                 <img :src="token.image" :alt="token.name">
-                                <p>Token Id <br> {{ HOLESKY_ID ? token.tokenId : Converter.fineAddress(token.tokenId,
+                                <p>Token Id <br> {{ props.chainId == HOLESKY_ID ? token.tokenId :
+                                    Converter.fineAddress(token.tokenId,
                                     2) }}</p>
                             </div>
                         </div>
